@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -36,12 +37,13 @@ export function ResourceCard({ resource, onBookmark }: ResourceCardProps) {
   return (
     <Card className="group relative flex flex-col overflow-hidden transition-shadow hover:shadow-md">
       <Link href={`/resources/${resource.id}`} className="flex-1">
-        <div className="flex h-32 items-center justify-center bg-muted/50 text-muted-foreground">
+        <div className="relative flex h-32 items-center justify-center bg-muted/50 text-muted-foreground">
           {resource.thumbnailUrl ? (
-            <img
+            <Image
               src={resource.thumbnailUrl}
               alt={resource.title}
-              className="h-full w-full object-cover"
+              fill
+              className="object-cover"
             />
           ) : (
             typeIcons[resource.resourceType] || <FileText className="h-8 w-8" />
