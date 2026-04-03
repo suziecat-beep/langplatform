@@ -28,6 +28,26 @@ const typeIcons: Record<string, React.ReactNode> = {
   GRADED_READER: <BookMarked className="h-8 w-8" />,
 };
 
+const typeColors: Record<string, string> = {
+  VIDEO: "bg-blue-100 text-blue-600",
+  TEXTBOOK: "bg-green-100 text-green-600",
+  AUDIO: "bg-orange-100 text-orange-600",
+  WORKSHEET: "bg-purple-100 text-purple-600",
+  ARTICLE: "bg-indigo-100 text-indigo-600",
+  FLASHCARD_DECK: "bg-pink-100 text-pink-600",
+  GRADED_READER: "bg-teal-100 text-teal-600",
+};
+
+const typeLabels: Record<string, string> = {
+  VIDEO: "Video",
+  TEXTBOOK: "Textbook",
+  AUDIO: "Audio",
+  WORKSHEET: "Worksheet",
+  ARTICLE: "Article",
+  FLASHCARD_DECK: "Flashcard Deck",
+  GRADED_READER: "Graded Reader",
+};
+
 interface ResourceCardProps {
   resource: ResourceWithContributor;
   onBookmark?: (id: string) => void;
@@ -37,7 +57,7 @@ export function ResourceCard({ resource, onBookmark }: ResourceCardProps) {
   return (
     <Card className="group relative flex flex-col overflow-hidden transition-shadow hover:shadow-md">
       <Link href={`/resources/${resource.id}`} className="flex-1">
-        <div className="relative flex h-32 items-center justify-center bg-muted/50 text-muted-foreground">
+        <div className={`relative flex aspect-video flex-col items-center justify-center gap-1 ${typeColors[resource.resourceType] ?? "bg-muted/50 text-muted-foreground"}`}>
           {resource.thumbnailUrl ? (
             <Image
               src={resource.thumbnailUrl}
@@ -46,7 +66,12 @@ export function ResourceCard({ resource, onBookmark }: ResourceCardProps) {
               className="object-cover"
             />
           ) : (
-            typeIcons[resource.resourceType] || <FileText className="h-8 w-8" />
+            <>
+              {typeIcons[resource.resourceType] ?? <FileText className="h-8 w-8" />}
+              <span className="text-xs font-medium">
+                {typeLabels[resource.resourceType] ?? "Resource"}
+              </span>
+            </>
           )}
         </div>
         <CardContent className="p-4">

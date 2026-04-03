@@ -19,8 +19,8 @@ const popularLanguages = [
 export default function HomePage() {
   const router = useRouter();
   const [search, setSearch] = useState("");
-  const { data: recentData } = useResources({ sort: "recent", limit: 8 });
-  const { data: topData } = useResources({ sort: "rating", limit: 8 });
+  const { data: recentData } = useResources({ sort: "recent", limit: 6 });
+  const { data: topData } = useResources({ sort: "rating", limit: 6 });
   const { data: collectionsData } = useCollections({ limit: 4 });
 
   const handleSearch = (e: React.FormEvent) => {
@@ -72,7 +72,7 @@ export default function HomePage() {
             </Button>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {recentData.data.slice(0, 8).map((resource: any) => (
+            {recentData.data.slice(0, 6).map((resource: any) => (
               <ResourceCard key={resource.id} resource={resource} />
             ))}
           </div>
@@ -86,10 +86,11 @@ export default function HomePage() {
             <h2 className="text-2xl font-bold">Top Rated</h2>
             <Button variant="ghost" asChild>
               <Link href="/resources?sort=rating">View all</Link>
+
             </Button>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {topData.data.slice(0, 8).map((resource: any) => (
+            {topData.data.slice(0, 6).map((resource: any) => (
               <ResourceCard key={resource.id} resource={resource} />
             ))}
           </div>

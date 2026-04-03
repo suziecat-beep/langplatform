@@ -12,7 +12,8 @@ export async function GET(request: Request) {
     if (!params.success) {
       return NextResponse.json({ error: "Invalid query parameters" }, { status: 400 });
     }
-    const { page, limit, language, proficiencyLevel, resourceType, skillTag, sort, search } = params.data;
+    const { page, limit, language, proficiencyLevel: _proficiencyLevel, level, resourceType, skillTag, sort, search } = params.data;
+    const proficiencyLevel = _proficiencyLevel || level;
 
     const where: Prisma.ResourceWhereInput = { status: "APPROVED" };
     if (language) where.language = language;
@@ -26,8 +27,8 @@ export async function GET(request: Request) {
       ];
     }
 
-    let orderBy: Prisma.ResourceOrderByWithRelationInput = { createdAt: "desc" };
-    if (sort === "rating") orderBy = { avgRating: "desc" };
+    let orderBy: Prisma.ResourceOrderByWithRelationInput | Prisma.ResourceOrderByWithRelationInput[] = { createdAt: "desc" };
+    if (sort === "rating") orderBy = [{ avgRating: "desc" }, { ratingCount: "desc" }];
     if (sort === "popular") orderBy = { downloadCount: "desc" };
 
     const [resources, total] = await Promise.all([

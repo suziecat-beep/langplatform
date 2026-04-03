@@ -44,6 +44,7 @@ export default function UploadResourcePage() {
   const [level, setLevel] = useState("");
   const [type, setType] = useState("");
   const [skills, setSkills] = useState<string[]>([]);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   if (!isContributor) {
     return (
@@ -72,6 +73,18 @@ export default function UploadResourcePage() {
   };
 
   const handleSubmit = async () => {
+    const newErrors: Record<string, string> = {};
+    if (!title.trim()) newErrors.title = "Title is required";
+    if (!description.trim()) newErrors.description = "Description is required";
+    if (!language) newErrors.language = "Please select a language";
+    if (!level) newErrors.level = "Please select a proficiency level";
+    if (!type) newErrors.type = "Please select a resource type";
+    if (skills.length === 0) newErrors.skills = "Select at least one skill tag";
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+    setErrors({});
     try {
       await createResource.mutateAsync({
         title,
@@ -189,46 +202,51 @@ export default function UploadResourcePage() {
           <CardContent className="space-y-4">
             <div>
               <Label htmlFor="title">Title</Label>
-              <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Genki I: Elementary Japanese" />
+              <Input id="title" value={title} onChange={(e) => { setTitle(e.target.value); setErrors((prev) => ({ ...prev, title: "" })); }} placeholder="e.g. Genki I: Elementary Japanese" className={errors.title ? "border-red-500" : ""} />
+              {errors.title && <p className="text-sm text-red-500 mt-1">{errors.title}</p>}
             </div>
             <div>
               <Label htmlFor="description">Description</Label>
-              <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe the resource..." rows={4} />
+              <Textarea id="description" value={description} onChange={(e) => { setDescription(e.target.value); setErrors((prev) => ({ ...prev, description: "" })); }} placeholder="Describe the resource..." rows={4} className={errors.description ? "border-red-500" : ""} />
+              {errors.description && <p className="text-sm text-red-500 mt-1">{errors.description}</p>}
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Language</Label>
-                <Select value={language} onValueChange={setLanguage}>
-                  <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                <Select value={language} onValueChange={(v) => { setLanguage(v); setErrors((prev) => ({ ...prev, language: "" })); }}>
+                  <SelectTrigger className={errors.language ? "border-red-500" : ""}><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>
                     {languages.map((l) => (
                       <SelectItem key={l} value={l} className="capitalize">{l}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+                {errors.language && <p className="text-sm text-red-500 mt-1">{errors.language}</p>}
               </div>
               <div>
                 <Label>Proficiency Level</Label>
-                <Select value={level} onValueChange={setLevel}>
-                  <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                <Select value={level} onValueChange={(v) => { setLevel(v); setErrors((prev) => ({ ...prev, level: "" })); }}>
+                  <SelectTrigger className={errors.level ? "border-red-500" : ""}><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>
                     {proficiencyLevels.map((l) => (
                       <SelectItem key={l} value={l}>{l}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+                {errors.level && <p className="text-sm text-red-500 mt-1">{errors.level}</p>}
               </div>
             </div>
             <div>
               <Label>Resource Type</Label>
-              <Select value={type} onValueChange={setType}>
-                <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+              <Select value={type} onValueChange={(v) => { setType(v); setErrors((prev) => ({ ...prev, type: "" })); }}>
+                <SelectTrigger className={errors.type ? "border-red-500" : ""}><SelectValue placeholder="Select" /></SelectTrigger>
                 <SelectContent>
                   {resourceTypes.map((t) => (
                     <SelectItem key={t} value={t} className="capitalize">{t.toLowerCase().replace("_", " ")}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+              {errors.type && <p className="text-sm text-red-500 mt-1">{errors.type}</p>}
             </div>
             <div>
               <Label>Skill Tags</Label>
@@ -243,6 +261,7 @@ export default function UploadResourcePage() {
                   </label>
                 ))}
               </div>
+              {errors.skills && <p className="text-sm text-red-500 mt-1">{errors.skills}</p>}
             </div>
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setStep(1)}>Back</Button>

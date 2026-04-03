@@ -20,7 +20,7 @@ function ResourcesContent() {
   const filters = {
     page: parseInt(searchParams.get("page") || "1"),
     language: searchParams.get("language") || undefined,
-    proficiencyLevel: searchParams.get("proficiencyLevel") || undefined,
+    proficiencyLevel: searchParams.get("proficiencyLevel") || searchParams.get("level") || undefined,
     resourceType: searchParams.get("resourceType") || undefined,
     skillTag: searchParams.get("skillTag") || undefined,
     sort: searchParams.get("sort") || undefined,

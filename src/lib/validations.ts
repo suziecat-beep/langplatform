@@ -46,6 +46,7 @@ export const queryParamsSchema = z.object({
   limit: z.coerce.number().int().min(1).max(50).optional().default(20),
   language: z.string().optional(),
   proficiencyLevel: z.enum(proficiencyLevels).optional(),
+  level: z.enum(proficiencyLevels).optional(),
   resourceType: z.enum(resourceTypes).optional(),
   skillTag: z.enum(skillTags).optional(),
   sort: z.enum(["rating", "recent", "popular"]).optional(),

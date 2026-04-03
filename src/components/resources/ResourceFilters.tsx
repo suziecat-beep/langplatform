@@ -50,6 +50,7 @@ export function ResourceFilters() {
   const hasFilters =
     searchParams.get("language") ||
     searchParams.get("proficiencyLevel") ||
+    searchParams.get("level") ||
     searchParams.get("resourceType") ||
     searchParams.get("skillTag") ||
     searchParams.get("search") ||
@@ -84,8 +85,14 @@ export function ResourceFilters() {
         </Select>
 
         <Select
-          value={searchParams.get("proficiencyLevel") || ""}
-          onValueChange={(v) => updateParam("proficiencyLevel", v || null)}
+          value={searchParams.get("proficiencyLevel") || searchParams.get("level") || ""}
+          onValueChange={(v) => {
+            const params = new URLSearchParams(searchParams.toString());
+            params.delete("level");
+            if (v) { params.set("proficiencyLevel", v); } else { params.delete("proficiencyLevel"); }
+            params.delete("page");
+            router.push(`/resources?${params.toString()}`);
+          }}
         >
           <SelectTrigger className="w-[130px]">
             <SelectValue placeholder="Level" />

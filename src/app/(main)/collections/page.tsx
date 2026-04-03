@@ -34,8 +34,17 @@ export default function CollectionsPage() {
   const [description, setDescription] = useState("");
   const [language, setLanguage] = useState("");
   const [visibility, setVisibility] = useState("PUBLIC");
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleCreate = async () => {
+    const newErrors: Record<string, string> = {};
+    if (!title.trim()) newErrors.title = "Title is required";
+    if (!language) newErrors.language = "Please select a language";
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+    setErrors({});
     try {
       await createCollection.mutateAsync({ title, description, language, visibility });
       toast({ title: "Collection created!" });
@@ -61,16 +70,17 @@ export default function CollectionsPage() {
             <DialogContent>
               <DialogHeader><DialogTitle>Create Collection</DialogTitle></DialogHeader>
               <div className="space-y-4">
-                <div><Label>Title</Label><Input value={title} onChange={(e) => setTitle(e.target.value)} /></div>
+                <div><Label>Title</Label><Input value={title} onChange={(e) => { setTitle(e.target.value); setErrors((prev) => ({ ...prev, title: "" })); }} className={errors.title ? "border-red-500" : ""} />{errors.title && <p className="text-sm text-red-500 mt-1">{errors.title}</p>}</div>
                 <div><Label>Description</Label><Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} /></div>
                 <div>
                   <Label>Language</Label>
-                  <Select value={language} onValueChange={setLanguage}>
-                    <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                  <Select value={language} onValueChange={(v) => { setLanguage(v); setErrors((prev) => ({ ...prev, language: "" })); }}>
+                    <SelectTrigger className={errors.language ? "border-red-500" : ""}><SelectValue placeholder="Select" /></SelectTrigger>
                     <SelectContent>
                       {languages.map((l) => <SelectItem key={l} value={l} className="capitalize">{l}</SelectItem>)}
                     </SelectContent>
                   </Select>
+                  {errors.language && <p className="text-sm text-red-500 mt-1">{errors.language}</p>}
                 </div>
                 <div>
                   <Label>Visibility</Label>

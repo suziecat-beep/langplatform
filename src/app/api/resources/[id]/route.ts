@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
@@ -36,11 +37,22 @@ export async function GET(
       }
     }
 
-    // Fire-and-forget download count increment
-    prisma.resource.update({
-      where: { id: params.id },
-      data: { downloadCount: { increment: 1 } },
-    }).catch(() => {});
+    // Deduplicated view count increment via cookie
+    const cookieStore = await cookies();
+    const viewCookieName = `viewed_${params.id}`;
+    if (!cookieStore.get(viewCookieName)) {
+      prisma.resource.update({
+        where: { id: params.id },
+        data: { downloadCount: { increment: 1 } },
+      }).catch(() => {});
+      const response = NextResponse.json({ data: resource });
+      response.cookies.set(viewCookieName, "1", {
+        maxAge: 86400,
+        httpOnly: true,
+        sameSite: "lax",
+      });
+      return response;
+    }
 
     return NextResponse.json({ data: resource });
   } catch {

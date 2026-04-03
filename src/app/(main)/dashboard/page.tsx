@@ -13,6 +13,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { BookOpen, Bookmark, FolderOpen, Upload, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 const statusColors: Record<string, string> = {
   TO_STUDY: "bg-blue-100 text-blue-800",
@@ -32,6 +33,8 @@ const nextStatus: Record<string, string> = {
 export default function DashboardPage() {
   const { user, isContributor } = useAuth();
   const { toast } = useToast();
+  const searchParams = useSearchParams();
+  const initialTab = searchParams.get("tab") || "overview";
   const [bookmarkFilter, setBookmarkFilter] = useState<string | undefined>(undefined);
   const { data: bookmarksData } = useBookmarks(bookmarkFilter);
   const { data: collectionsData } = useCollections();
@@ -60,7 +63,7 @@ export default function DashboardPage() {
       <h1 className="text-3xl font-bold">Dashboard</h1>
       <p className="text-muted-foreground">Welcome back, {user?.name}!</p>
 
-      <Tabs defaultValue="overview">
+      <Tabs defaultValue={initialTab}>
         <TabsList className="w-full justify-start overflow-x-auto">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="bookmarks">My Bookmarks</TabsTrigger>

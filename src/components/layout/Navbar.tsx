@@ -68,7 +68,7 @@ export function Navbar() {
                   <Link href="/dashboard">Dashboard</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/collections">My Collections</Link>
+                  <Link href="/dashboard?tab=collections">My Collections</Link>
                 </DropdownMenuItem>
                 {(session.user as any).role === "ADMIN" && (
                   <DropdownMenuItem asChild>

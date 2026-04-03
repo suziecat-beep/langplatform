@@ -47,8 +47,20 @@ export default function MediaHubPage() {
   const [platform, setPlatform] = useState("");
   const [language, setLanguage] = useState("");
   const [level, setLevel] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleSubmit = async () => {
+    const newErrors: Record<string, string> = {};
+    if (!title.trim()) newErrors.title = "Title is required";
+    if (!url.trim()) newErrors.url = "URL is required";
+    else if (!/^https?:\/\/.+/.test(url)) newErrors.url = "Please enter a valid URL";
+    if (!platform) newErrors.platform = "Please select a platform";
+    if (!language) newErrors.language = "Please select a language";
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+    setErrors({});
     try {
       await createMediaLink.mutateAsync({
         title, url, platform, language,
@@ -87,10 +99,10 @@ export default function MediaHubPage() {
             <DialogContent>
               <DialogHeader><DialogTitle>Submit a Media Link</DialogTitle></DialogHeader>
               <div className="space-y-4">
-                <div><Label>Title</Label><Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Japanese Pod 101" /></div>
-                <div><Label>URL</Label><Input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://..." /></div>
-                <div><Label>Platform</Label><Select value={platform} onValueChange={setPlatform}><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger><SelectContent>{mediaPlatforms.map((p) => <SelectItem key={p} value={p} className="capitalize">{p.toLowerCase()}</SelectItem>)}</SelectContent></Select></div>
-                <div><Label>Language</Label><Select value={language} onValueChange={setLanguage}><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger><SelectContent>{languages.map((l) => <SelectItem key={l} value={l} className="capitalize">{l}</SelectItem>)}</SelectContent></Select></div>
+                <div><Label>Title</Label><Input value={title} onChange={(e) => { setTitle(e.target.value); setErrors((prev) => ({ ...prev, title: "" })); }} placeholder="e.g. Japanese Pod 101" className={errors.title ? "border-red-500" : ""} />{errors.title && <p className="text-sm text-red-500 mt-1">{errors.title}</p>}</div>
+                <div><Label>URL</Label><Input value={url} onChange={(e) => { setUrl(e.target.value); setErrors((prev) => ({ ...prev, url: "" })); }} placeholder="https://..." className={errors.url ? "border-red-500" : ""} />{errors.url && <p className="text-sm text-red-500 mt-1">{errors.url}</p>}</div>
+                <div><Label>Platform</Label><Select value={platform} onValueChange={(v) => { setPlatform(v); setErrors((prev) => ({ ...prev, platform: "" })); }}><SelectTrigger className={errors.platform ? "border-red-500" : ""}><SelectValue placeholder="Select" /></SelectTrigger><SelectContent>{mediaPlatforms.map((p) => <SelectItem key={p} value={p} className="capitalize">{p.toLowerCase()}</SelectItem>)}</SelectContent></Select>{errors.platform && <p className="text-sm text-red-500 mt-1">{errors.platform}</p>}</div>
+                <div><Label>Language</Label><Select value={language} onValueChange={(v) => { setLanguage(v); setErrors((prev) => ({ ...prev, language: "" })); }}><SelectTrigger className={errors.language ? "border-red-500" : ""}><SelectValue placeholder="Select" /></SelectTrigger><SelectContent>{languages.map((l) => <SelectItem key={l} value={l} className="capitalize">{l}</SelectItem>)}</SelectContent></Select>{errors.language && <p className="text-sm text-red-500 mt-1">{errors.language}</p>}</div>
                 <div><Label>Level (optional)</Label><Select value={level} onValueChange={setLevel}><SelectTrigger><SelectValue placeholder="Any level" /></SelectTrigger><SelectContent>{proficiencyLevels.map((l) => <SelectItem key={l} value={l}>{l}</SelectItem>)}</SelectContent></Select></div>
                 <Button onClick={handleSubmit} disabled={!title || !url || !platform || !language || createMediaLink.isPending} className="w-full">
                   {createMediaLink.isPending ? "Submitting..." : "Submit"}

@@ -4,7 +4,8 @@ import { useParams } from "next/navigation";
 import { useState } from "react";
 import { useResource, useResources } from "@/hooks/useResources";
 import { useReviews, useCreateReview, useVoteReview } from "@/hooks/useReviews";
-import { useCreateBookmark } from "@/hooks/useBookmarks";
+import { useBookmarkStatus, useToggleBookmark } from "@/hooks/useBookmarks";
+import { useCollections, useAddToCollection } from "@/hooks/useCollections";
 import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,7 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { StarRating } from "@/components/resources/StarRating";
 import { ResourceCard } from "@/components/resources/ResourceCard";
 import { useToast } from "@/components/ui/use-toast";
-import { Bookmark, Download, ExternalLink, ThumbsUp } from "lucide-react";
+import { BookmarkCheck, Bookmark, Download, ExternalLink, FolderPlus, ThumbsUp } from "lucide-react";
 
 const levelColors: Record<string, string> = {
   A1: "bg-green-100 text-green-800",
@@ -30,15 +31,22 @@ const levelColors: Record<string, string> = {
 export default function ResourceDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const { data: resourceData, isLoading } = useResource(id);
   const { data: reviewsData } = useReviews(id);
   const createReview = useCreateReview();
   const voteReview = useVoteReview();
-  const createBookmark = useCreateBookmark();
+  const { data: bookmarkData } = useBookmarkStatus(id);
+  const toggleBookmark = useToggleBookmark();
+  const isBookmarked = bookmarkData?.bookmarked || false;
+  const { data: collectionsData } = useCollections();
+  const addToCollection = useAddToCollection();
+  const myCollections = (collectionsData?.data || []).filter((c: any) => c.creatorId === user?.id);
   const [reviewRating, setReviewRating] = useState(0);
   const [reviewComment, setReviewComment] = useState("");
   const [reviewOpen, setReviewOpen] = useState(false);
+  const [collectionOpen, setCollectionOpen] = useState(false);
+  const [addedToCollections, setAddedToCollections] = useState<Set<string>>(new Set());
 
   const resource = resourceData?.data;
   const reviews = reviewsData?.data || [];
@@ -63,14 +71,39 @@ export default function ResourceDetailPage() {
       setReviewRating(0);
       setReviewComment("");
     } catch (err: any) {
+      if (err.message?.includes("already reviewed")) {
+        setReviewOpen(false);
+        toast({ title: "You have already reviewed this resource.", variant: "destructive" });
+      } else {
+        toast({ title: "Error", description: err.message, variant: "destructive" });
+      }
+    }
+  };
+
+  const handleAddToCollection = async (collectionId: string, collectionTitle: string) => {
+    try {
+      await addToCollection.mutateAsync({ collectionId, resourceId: id });
+      setAddedToCollections((prev) => new Set(prev).add(collectionId));
+      toast({ title: `Added to "${collectionTitle}"!` });
+    } catch (err: any) {
+      if (err.message?.includes("already in collection")) {
+        setAddedToCollections((prev) => new Set(prev).add(collectionId));
+      }
       toast({ title: "Error", description: err.message, variant: "destructive" });
     }
   };
 
   const handleBookmark = async () => {
+    if (!isAuthenticated) {
+      toast({ title: "Sign in to bookmark resources", variant: "destructive" });
+      return;
+    }
     try {
-      await createBookmark.mutateAsync(id);
-      toast({ title: "Bookmarked!" });
+      const result = await toggleBookmark.mutateAsync({
+        resourceId: id,
+        bookmarkId: bookmarkData?.bookmarkId || null,
+      });
+      toast({ title: result.action === "added" ? "Resource bookmarked!" : "Bookmark removed." });
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     }
@@ -115,9 +148,9 @@ export default function ResourceDetailPage() {
             <span className="text-sm">{resource.contributor?.name}</span>
           </div>
           <div className="flex items-center gap-1">
-            <StarRating rating={resource.avgRating} size="md" />
+            <StarRating rating={reviews.length > 0 ? reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviews.length : 0} size="md" />
             <span className="text-sm text-muted-foreground">
-              ({resource.ratingCount} review{resource.ratingCount !== 1 ? "s" : ""})
+              ({reviews.length} review{reviews.length !== 1 ? "s" : ""})
             </span>
           </div>
           <span className="text-sm text-muted-foreground">
@@ -134,13 +167,61 @@ export default function ResourceDetailPage() {
               </a>
             </Button>
           )}
-          {isAuthenticated && (
-            <Button variant="outline" onClick={handleBookmark}>
-              <Bookmark className="mr-2 h-4 w-4" /> Bookmark
-            </Button>
-          )}
+          <Button variant={isBookmarked ? "default" : "outline"} onClick={handleBookmark} disabled={toggleBookmark.isPending}>
+            {isBookmarked ? <BookmarkCheck className="mr-2 h-4 w-4" /> : <Bookmark className="mr-2 h-4 w-4" />}
+            {isBookmarked ? "Bookmarked" : "Bookmark"}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => {
+              if (!isAuthenticated) {
+                toast({ title: "Sign in to add to collections", variant: "destructive" });
+                return;
+              }
+              setCollectionOpen(true);
+            }}
+          >
+            <FolderPlus className="mr-2 h-4 w-4" />
+            Add to Collection
+          </Button>
         </div>
       </div>
+
+      {/* Add to Collection Dialog */}
+      <Dialog open={collectionOpen} onOpenChange={setCollectionOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add to Collection</DialogTitle>
+          </DialogHeader>
+          {myCollections.length === 0 ? (
+            <p className="text-sm text-muted-foreground">You have no collections yet. Create one first.</p>
+          ) : (
+            <div className="space-y-2">
+              {myCollections.map((collection: any) => {
+                const isAdded = addedToCollections.has(collection.id);
+                return (
+                  <div key={collection.id} className="flex items-center justify-between rounded border p-3">
+                    <div>
+                      <p className="font-medium">{collection.title}</p>
+                      <p className="text-xs text-muted-foreground capitalize">
+                        {collection.language} · {collection._count?.items ?? 0} item{collection._count?.items !== 1 ? "s" : ""}
+                      </p>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant={isAdded ? "secondary" : "outline"}
+                      disabled={isAdded || addToCollection.isPending}
+                      onClick={() => handleAddToCollection(collection.id, collection.title)}
+                    >
+                      {isAdded ? "Added" : "Add"}
+                    </Button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Description */}
       <Card>

@@ -1,15 +1,19 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useCollection, useForkCollection, useRemoveFromCollection } from "@/hooks/useCollections";
+import { useState } from "react";
+import { useCollection, useForkCollection, useRemoveFromCollection, useAddToCollection } from "@/hooks/useCollections";
+import { useResources } from "@/hooks/useResources";
 import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import { GitFork, Share2, Trash2 } from "lucide-react";
+import { GitFork, Share2, Trash2, Plus } from "lucide-react";
 import Link from "next/link";
 
 export default function CollectionDetailPage() {
@@ -21,8 +25,14 @@ export default function CollectionDetailPage() {
   const forkCollection = useForkCollection();
   const removeItem = useRemoveFromCollection();
 
+  const addToCollection = useAddToCollection();
+  const [addResourceOpen, setAddResourceOpen] = useState(false);
+  const [resourceSearch, setResourceSearch] = useState("");
+  const { data: searchData } = useResources({ search: resourceSearch, limit: 10 });
+
   const collection = data?.data;
   const isOwner = user?.id === collection?.creatorId;
+  const existingResourceIds = new Set(collection?.items?.map((item: any) => item.resource.id) || []);
 
   const handleFork = async () => {
     try {
@@ -58,6 +68,11 @@ export default function CollectionDetailPage() {
             )}
           </div>
           <div className="flex gap-2">
+            {isOwner && (
+              <Button variant="outline" onClick={() => setAddResourceOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" /> Add Resource
+              </Button>
+            )}
             {collection.visibility === "PUBLIC" && !isOwner && (
               <Button variant="outline" onClick={handleFork} disabled={forkCollection.isPending}>
                 <GitFork className="mr-2 h-4 w-4" /> Fork
@@ -111,6 +126,57 @@ export default function CollectionDetailPage() {
       ) : (
         <div className="py-8 text-center text-muted-foreground">This collection is empty.</div>
       )}
+
+      {/* Add Resource Dialog */}
+      <Dialog open={addResourceOpen} onOpenChange={setAddResourceOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Add Resource</DialogTitle>
+          </DialogHeader>
+          <Input
+            placeholder="Search resources by title..."
+            value={resourceSearch}
+            onChange={(e) => setResourceSearch(e.target.value)}
+            autoFocus
+          />
+          <div className="mt-2 max-h-80 space-y-2 overflow-y-auto">
+            {resourceSearch.length < 2 ? (
+              <p className="py-4 text-center text-sm text-muted-foreground">Type at least 2 characters to search.</p>
+            ) : searchData?.data?.length === 0 ? (
+              <p className="py-4 text-center text-sm text-muted-foreground">No resources found.</p>
+            ) : (
+              searchData?.data?.map((resource: any) => {
+                const alreadyAdded = existingResourceIds.has(resource.id);
+                return (
+                  <div key={resource.id} className="flex items-center justify-between rounded border p-3">
+                    <div className="flex-1 min-w-0 mr-2">
+                      <p className="truncate font-medium text-sm">{resource.title}</p>
+                      <p className="text-xs text-muted-foreground capitalize">
+                        {resource.language} · {resource.proficiencyLevel}
+                      </p>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant={alreadyAdded ? "secondary" : "outline"}
+                      disabled={alreadyAdded || addToCollection.isPending}
+                      onClick={async () => {
+                        try {
+                          await addToCollection.mutateAsync({ collectionId: id, resourceId: resource.id });
+                          toast({ title: `"${resource.title}" added!` });
+                        } catch (err: any) {
+                          toast({ title: "Error", description: err.message, variant: "destructive" });
+                        }
+                      }}
+                    >
+                      {alreadyAdded ? "Added" : "Add"}
+                    </Button>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
