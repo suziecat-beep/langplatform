@@ -84,6 +84,7 @@ export async function POST(request: Request) {
         fileUrl: data.fileUrl || null,
         embedUrl: data.embedUrl || null,
         thumbnailUrl: data.thumbnailUrl || null,
+        content: data.content || null,
         contributorId: session.user.id,
         status: "PENDING",
       },

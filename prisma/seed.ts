@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { resourceContent } from "./seed-content";
 
 const prisma = new PrismaClient();
 
@@ -473,6 +474,7 @@ async function main() {
     const resource = await prisma.resource.create({
       data: {
         ...data,
+        content: resourceContent[data.title] ?? null,
         status: "APPROVED",
         avgRating: parseFloat((3 + Math.random() * 2).toFixed(1)),
         ratingCount: Math.floor(Math.random() * 20) + 1,

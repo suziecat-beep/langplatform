@@ -10,6 +10,7 @@ export const bookmarkStatuses = ["TO_STUDY", "IN_PROGRESS", "COMPLETED"] as cons
 export const createResourceSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters").max(200),
   description: z.string().min(10, "Description must be at least 10 characters").max(5000),
+  content: z.string().max(50000).optional(),
   language: z.string().min(1, "Language is required"),
   proficiencyLevel: z.enum(proficiencyLevels),
   resourceType: z.enum(resourceTypes),

@@ -97,6 +97,7 @@ model Resource {
   id               String           @id @default(cuid())
   title            String
   description      String           @db.Text
+  content          String?          @db.Text
   language         String
   proficiencyLevel ProficiencyLevel
   resourceType     ResourceType
