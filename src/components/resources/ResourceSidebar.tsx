@@ -140,12 +140,12 @@ export function ResourceSidebar({
         </CardContent>
       </Card>
 
-      {/* Skills You'll Practice */}
+      {/* Skills You&apos;ll Practice */}
       {resource.skillTags.length > 0 && (
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-              Skills You'll Practice
+              Skills You&apos;ll Practice
             </CardTitle>
           </CardHeader>
           <CardContent>

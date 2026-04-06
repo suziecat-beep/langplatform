@@ -7,7 +7,6 @@ import { useReviews, useCreateReview, useVoteReview } from "@/hooks/useReviews";
 import { useBookmarkStatus, useToggleBookmark } from "@/hooks/useBookmarks";
 import { useCollections, useAddToCollection } from "@/hooks/useCollections";
 import { useAuth } from "@/hooks/useAuth";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
