@@ -16,6 +16,11 @@ const config: Config = {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ["var(--font-space-grotesk)", "DM Sans", "system-ui", "sans-serif"],
+        mono: ["var(--font-space-mono)", "JetBrains Mono", "SF Mono", "monospace"],
+        display: ["Doto", "var(--font-space-mono)", "monospace"],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -50,11 +55,22 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        /* Nothing system tokens */
+        nd: {
+          accent: "#D71921",
+          success: "#4A9E5C",
+          warning: "#D4A843",
+          interactive: "#007AFF",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      letterSpacing: {
+        label: "0.08em",
+        display: "-0.02em",
       },
     },
   },

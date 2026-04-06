@@ -46,11 +46,13 @@ function ResourcesContent() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Browse Resources</h1>
-        <p className="text-muted-foreground mt-1">
-          Discover learning resources across languages and skill levels
+      <div className="border-b border-border pb-6">
+        <p className="mb-2 font-mono text-[11px] uppercase tracking-label text-muted-foreground">
+          Browse Resources
         </p>
+        <h1 className="font-sans text-3xl font-bold tracking-tight text-foreground">
+          Find your next resource.
+        </h1>
       </div>
 
       <ResourceFilters />

@@ -2,14 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { ResourceCard } from "@/components/resources/ResourceCard";
 import { useResources } from "@/hooks/useResources";
 import { useCollections } from "@/hooks/useCollections";
-import { Search, BookOpen, Users, Globe } from "lucide-react";
 import Link from "next/link";
 
 const popularLanguages = [
@@ -19,8 +15,8 @@ const popularLanguages = [
 export default function HomePage() {
   const router = useRouter();
   const [search, setSearch] = useState("");
-  const { data: recentData } = useResources({ sort: "recent", limit: 6 });
-  const { data: topData } = useResources({ sort: "rating", limit: 6 });
+  const { data: recentData } = useResources({ sort: "recent", limit: 8 });
+  const { data: topData } = useResources({ sort: "rating", limit: 4 });
   const { data: collectionsData } = useCollections({ limit: 4 });
 
   const handleSearch = (e: React.FormEvent) => {
@@ -31,139 +27,197 @@ export default function HomePage() {
   };
 
   return (
-    <div className="space-y-12">
-      {/* Hero */}
-      <section className="py-12 text-center">
-        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-          Every resource for your target language, in one place
-        </h1>
-        <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
-          Discover, share, and organize learning resources — textbooks, worksheets,
-          audio, video, flashcards, and more — across any language and skill level.
-        </p>
-        <form onSubmit={handleSearch} className="mx-auto mt-8 flex max-w-md gap-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Search resources..."
+    <div className="space-y-20">
+
+      {/* ── Hero ── */}
+      <section
+        className="relative -mx-4 px-4 py-16 md:py-24"
+        style={{
+          backgroundImage: "radial-gradient(circle, #CCCCCC 0.5px, transparent 0.5px)",
+          backgroundSize: "12px 12px",
+        }}
+      >
+        <div className="relative max-w-3xl">
+          {/* Eyebrow */}
+          <p className="mb-6 font-mono text-[11px] uppercase tracking-label text-muted-foreground">
+            Language Learning Platform
+          </p>
+
+          {/* Headline — primary layer */}
+          <h1 className="font-sans text-5xl font-bold leading-[1.05] tracking-tight text-foreground md:text-6xl lg:text-7xl">
+            Every resource<br />
+            for your target<br />
+            language.
+          </h1>
+
+          {/* Search — underline style */}
+          <form
+            onSubmit={handleSearch}
+            className="mt-10 flex max-w-lg items-end gap-4 border-b border-foreground/30 pb-2"
+          >
+            <input
+              className="flex-1 bg-transparent font-sans text-base text-foreground placeholder-muted-foreground outline-none"
+              placeholder="Search resources, languages, levels..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9"
             />
+            <button
+              type="submit"
+              className="font-mono text-[11px] uppercase tracking-label text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Search →
+            </button>
+          </form>
+
+          {/* Language chips — Space Mono ALL CAPS, border only */}
+          <div className="mt-8 flex flex-wrap gap-2">
+            {popularLanguages.map((lang) => (
+              <Link
+                key={lang}
+                href={`/resources?language=${lang}`}
+                className="rounded-full border border-border px-3 py-1.5 font-mono text-[10px] uppercase tracking-label text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
+              >
+                {lang}
+              </Link>
+            ))}
           </div>
-          <Button type="submit">Search</Button>
-        </form>
-        <div className="mt-6 flex flex-wrap justify-center gap-2">
-          {popularLanguages.map((lang) => (
-            <Button key={lang} variant="outline" size="sm" asChild className="capitalize">
-              <Link href={`/resources?language=${lang}`}>{lang}</Link>
-            </Button>
-          ))}
         </div>
       </section>
 
-      {/* Recently Added */}
+      {/* ── Stats ── */}
+      <section className="grid grid-cols-3 overflow-hidden rounded-xl border border-border">
+        {[
+          { value: `${recentData?.total ?? 35}+`, label: "Resources" },
+          { value: `${popularLanguages.length}+`, label: "Languages" },
+          { value: "∞", label: "Community" },
+        ].map((stat, i, arr) => (
+          <div
+            key={stat.label}
+            className={`px-6 py-8 ${i < arr.length - 1 ? "border-r border-border" : ""}`}
+          >
+            {/* Hero number — Doto display font, the one moment of surprise */}
+            <p className="font-display text-5xl font-bold tracking-tight text-foreground">
+              {stat.value}
+            </p>
+            <p className="mt-2 font-mono text-[10px] uppercase tracking-label text-muted-foreground">
+              {stat.label}
+            </p>
+          </div>
+        ))}
+      </section>
+
+      {/* ── Recently Added ── */}
       {recentData?.data?.length > 0 && (
         <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold">Recently Added</h2>
-            <Button variant="ghost" asChild>
-              <Link href="/resources?sort=recent">View all</Link>
-            </Button>
+          <div className="mb-6 flex items-center justify-between">
+            <span className="font-mono text-[11px] uppercase tracking-label text-muted-foreground">
+              Recently Added
+            </span>
+            <Link
+              href="/resources?sort=recent"
+              className="font-mono text-[11px] uppercase tracking-label text-muted-foreground transition-colors hover:text-foreground"
+            >
+              View All →
+            </Link>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {recentData.data.slice(0, 6).map((resource: any) => (
+            {recentData.data.slice(0, 8).map((resource: any) => (
               <ResourceCard key={resource.id} resource={resource} />
             ))}
           </div>
         </section>
       )}
 
-      {/* Top Rated */}
-      {topData?.data?.length > 0 && (
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold">Top Rated</h2>
-            <Button variant="ghost" asChild>
-              <Link href="/resources?sort=rating">View all</Link>
+      {/* ── Top Rated + Collections ── two-column asymmetric layout */}
+      <div className="grid grid-cols-1 gap-12 lg:grid-cols-3">
 
-            </Button>
-          </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {topData.data.slice(0, 6).map((resource: any) => (
-              <ResourceCard key={resource.id} resource={resource} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Popular Collections */}
-      {collectionsData?.data?.length > 0 && (
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold">Popular Collections</h2>
-            <Button variant="ghost" asChild>
-              <Link href="/collections">View all</Link>
-            </Button>
-          </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {collectionsData.data.slice(0, 4).map((collection: any) => (
-              <Card key={collection.id} className="transition-shadow hover:shadow-md">
-                <Link href={`/collections/${collection.id}`}>
-                  <CardContent className="p-4">
-                    <h3 className="font-semibold">{collection.title}</h3>
-                    {collection.description && (
-                      <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
-                        {collection.description}
-                      </p>
-                    )}
-                    <div className="mt-3 flex items-center gap-2">
-                      <Badge variant="secondary" className="capitalize">{collection.language}</Badge>
-                      <span className="text-xs text-muted-foreground">
-                        {collection._count?.items || 0} resources
-                      </span>
-                    </div>
-                    <p className="mt-2 text-xs text-muted-foreground">
-                      by {collection.creator?.name}
+        {/* Top Rated — narrower */}
+        {topData?.data?.length > 0 && (
+          <section className="lg:col-span-1">
+            <div className="mb-6 flex items-center justify-between">
+              <span className="font-mono text-[11px] uppercase tracking-label text-muted-foreground">
+                Top Rated
+              </span>
+              <Link
+                href="/resources?sort=rating"
+                className="font-mono text-[11px] uppercase tracking-label text-muted-foreground transition-colors hover:text-foreground"
+              >
+                All →
+              </Link>
+            </div>
+            <div className="divide-y divide-border rounded-xl border border-border overflow-hidden">
+              {topData.data.slice(0, 4).map((resource: any, i: number) => (
+                <Link
+                  key={resource.id}
+                  href={`/resources/${resource.id}`}
+                  className="flex items-start gap-4 bg-card px-4 py-4 transition-colors hover:bg-secondary"
+                >
+                  <span className="font-display text-2xl font-bold text-muted-foreground/40 tabular-nums">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-mono text-[10px] uppercase tracking-label text-muted-foreground mb-1">
+                      {resource.language} · {resource.proficiencyLevel}
                     </p>
-                  </CardContent>
+                    <p className="text-sm font-medium text-foreground leading-snug line-clamp-1">
+                      {resource.title}
+                    </p>
+                    <p className="mt-1 font-mono text-[10px] text-muted-foreground">
+                      ★ {resource.avgRating?.toFixed(1)} ({resource.ratingCount})
+                    </p>
+                  </div>
                 </Link>
-              </Card>
-            ))}
-          </div>
-        </section>
-      )}
+              ))}
+            </div>
+          </section>
+        )}
 
-      {/* Stats */}
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <Card>
-          <CardContent className="flex items-center gap-4 p-6">
-            <BookOpen className="h-8 w-8 text-primary" />
-            <div>
-              <p className="text-2xl font-bold">{recentData?.total || 0}+</p>
-              <p className="text-sm text-muted-foreground">Resources</p>
+        {/* Popular Collections — wider */}
+        {collectionsData?.data?.length > 0 && (
+          <section className="lg:col-span-2">
+            <div className="mb-6 flex items-center justify-between">
+              <span className="font-mono text-[11px] uppercase tracking-label text-muted-foreground">
+                Popular Collections
+              </span>
+              <Link
+                href="/collections"
+                className="font-mono text-[11px] uppercase tracking-label text-muted-foreground transition-colors hover:text-foreground"
+              >
+                View All →
+              </Link>
             </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex items-center gap-4 p-6">
-            <Globe className="h-8 w-8 text-primary" />
-            <div>
-              <p className="text-2xl font-bold">{popularLanguages.length}+</p>
-              <p className="text-sm text-muted-foreground">Languages</p>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {collectionsData.data.slice(0, 4).map((collection: any) => (
+                <Link
+                  key={collection.id}
+                  href={`/collections/${collection.id}`}
+                  className="group block"
+                >
+                  <Card className="h-full transition-colors hover:border-foreground/30">
+                    <CardContent className="p-5">
+                      <p className="font-mono text-[10px] uppercase tracking-label text-muted-foreground mb-3">
+                        {collection.language} · {collection._count?.items ?? 0} resources
+                      </p>
+                      <h3 className="text-sm font-medium text-foreground leading-snug">
+                        {collection.title}
+                      </h3>
+                      {collection.description && (
+                        <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
+                          {collection.description}
+                        </p>
+                      )}
+                      <p className="mt-4 font-mono text-[10px] uppercase tracking-label text-muted-foreground">
+                        by {collection.creator?.name}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
             </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex items-center gap-4 p-6">
-            <Users className="h-8 w-8 text-primary" />
-            <div>
-              <p className="text-2xl font-bold">Growing</p>
-              <p className="text-sm text-muted-foreground">Community</p>
-            </div>
-          </CardContent>
-        </Card>
-      </section>
+          </section>
+        )}
+
+      </div>
     </div>
   );
 }

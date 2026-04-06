@@ -1,7 +1,6 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { StarRating } from "./StarRating";
 import {
@@ -34,31 +33,32 @@ const typeLabels: Record<string, string> = {
 };
 
 const typeIcons: Record<string, React.ReactNode> = {
-  TEXTBOOK: <BookOpen className="h-4 w-4" />,
-  WORKSHEET: <FileText className="h-4 w-4" />,
-  VIDEO: <Video className="h-4 w-4" />,
-  AUDIO: <Headphones className="h-4 w-4" />,
-  ARTICLE: <Newspaper className="h-4 w-4" />,
-  FLASHCARD_DECK: <Layers className="h-4 w-4" />,
-  GRADED_READER: <BookMarked className="h-4 w-4" />,
+  TEXTBOOK: <BookOpen className="h-4 w-4" strokeWidth={1.5} />,
+  WORKSHEET: <FileText className="h-4 w-4" strokeWidth={1.5} />,
+  VIDEO: <Video className="h-4 w-4" strokeWidth={1.5} />,
+  AUDIO: <Headphones className="h-4 w-4" strokeWidth={1.5} />,
+  ARTICLE: <Newspaper className="h-4 w-4" strokeWidth={1.5} />,
+  FLASHCARD_DECK: <Layers className="h-4 w-4" strokeWidth={1.5} />,
+  GRADED_READER: <BookMarked className="h-4 w-4" strokeWidth={1.5} />,
 };
 
 const skillIcons: Record<string, React.ReactNode> = {
-  READING: <BookOpen className="h-4 w-4" />,
-  WRITING: <PenLine className="h-4 w-4" />,
-  LISTENING: <Headphones className="h-4 w-4" />,
-  SPEAKING: <MessageCircle className="h-4 w-4" />,
-  GRAMMAR: <GraduationCap className="h-4 w-4" />,
-  VOCABULARY: <BookText className="h-4 w-4" />,
+  READING: <BookOpen className="h-3.5 w-3.5" strokeWidth={1.5} />,
+  WRITING: <PenLine className="h-3.5 w-3.5" strokeWidth={1.5} />,
+  LISTENING: <Headphones className="h-3.5 w-3.5" strokeWidth={1.5} />,
+  SPEAKING: <MessageCircle className="h-3.5 w-3.5" strokeWidth={1.5} />,
+  GRAMMAR: <GraduationCap className="h-3.5 w-3.5" strokeWidth={1.5} />,
+  VOCABULARY: <BookText className="h-3.5 w-3.5" strokeWidth={1.5} />,
 };
 
+/* Data status colors for proficiency level */
 const levelColors: Record<string, string> = {
-  A1: "bg-green-100 text-green-800",
-  A2: "bg-green-200 text-green-900",
-  B1: "bg-yellow-100 text-yellow-800",
-  B2: "bg-yellow-200 text-yellow-900",
-  C1: "bg-red-100 text-red-800",
-  C2: "bg-red-200 text-red-900",
+  A1: "#4A9E5C",
+  A2: "#4A9E5C",
+  B1: "#D4A843",
+  B2: "#D4A843",
+  C1: "#D71921",
+  C2: "#D71921",
 };
 
 interface ResourceSidebarProps {
@@ -95,66 +95,107 @@ export function ResourceSidebar({
     day: "numeric",
   });
 
+  const rows = [
+    {
+      label: "Type",
+      value: (
+        <span className="flex items-center gap-1.5 text-foreground">
+          {typeIcons[resource.resourceType]}
+          <span className="font-mono text-[11px] uppercase tracking-label">
+            {typeLabels[resource.resourceType] ?? resource.resourceType}
+          </span>
+        </span>
+      ),
+    },
+    {
+      label: "Level",
+      value: (
+        <span
+          className="font-mono text-[11px] uppercase tracking-label font-bold"
+          style={{ color: levelColors[resource.proficiencyLevel] ?? "#666666" }}
+        >
+          {resource.proficiencyLevel}
+        </span>
+      ),
+    },
+    {
+      label: "Language",
+      value: (
+        <span className="font-mono text-[11px] uppercase tracking-label text-foreground capitalize">
+          {resource.language}
+        </span>
+      ),
+    },
+    {
+      label: "Rating",
+      value: (
+        <span className="flex items-center gap-1">
+          <StarRating rating={resource.avgRating} size="sm" />
+          <span className="font-mono text-[10px] text-muted-foreground">({resource.ratingCount})</span>
+        </span>
+      ),
+    },
+    {
+      label: "Views",
+      value: (
+        <span className="font-mono text-[11px] uppercase tracking-label text-foreground">
+          {resource.downloadCount.toLocaleString()}
+        </span>
+      ),
+    },
+    {
+      label: "Added",
+      value: (
+        <span className="font-mono text-[11px] uppercase tracking-label text-foreground">
+          {addedDate}
+        </span>
+      ),
+    },
+  ];
+
   return (
     <div className="space-y-4">
       {/* Resource Details */}
       <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-            Resource Details
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3 text-sm">
-          <div className="flex items-center justify-between">
-            <span className="text-muted-foreground">Type</span>
-            <span className="flex items-center gap-1.5 font-medium">
-              {typeIcons[resource.resourceType]}
-              {typeLabels[resource.resourceType] ?? resource.resourceType}
-            </span>
+        <CardContent className="p-0">
+          {/* Section label */}
+          <div className="border-b border-border px-4 py-3">
+            <p className="font-mono text-[10px] uppercase tracking-label text-muted-foreground">
+              Resource Details
+            </p>
           </div>
-          <div className="flex items-center justify-between">
-            <span className="text-muted-foreground">Level</span>
-            <Badge className={`${levelColors[resource.proficiencyLevel] || ""} border-0`}>
-              {resource.proficiencyLevel}
-            </Badge>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-muted-foreground">Language</span>
-            <span className="font-medium capitalize">{resource.language}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-muted-foreground">Rating</span>
-            <span className="flex items-center gap-1">
-              <StarRating rating={resource.avgRating} size="sm" />
-              <span className="text-xs text-muted-foreground">({resource.ratingCount})</span>
-            </span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-muted-foreground">Views</span>
-            <span className="font-medium">{resource.downloadCount.toLocaleString()}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-muted-foreground">Added</span>
-            <span className="font-medium">{addedDate}</span>
+          {/* Stat rows */}
+          <div className="divide-y divide-border">
+            {rows.map(({ label, value }) => (
+              <div key={label} className="flex items-center justify-between px-4 py-3">
+                <span className="font-mono text-[10px] uppercase tracking-label text-muted-foreground">
+                  {label}
+                </span>
+                {value}
+              </div>
+            ))}
           </div>
         </CardContent>
       </Card>
 
-      {/* Skills You&apos;ll Practice */}
+      {/* Skills */}
       {resource.skillTags.length > 0 && (
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-              Skills You&apos;ll Practice
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
+          <CardContent className="p-0">
+            <div className="border-b border-border px-4 py-3">
+              <p className="font-mono text-[10px] uppercase tracking-label text-muted-foreground">
+                Skills You&apos;ll Practice
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2 p-4">
               {resource.skillTags.map((tag) => (
-                <Badge key={tag} variant="secondary" className="flex items-center gap-1.5 px-2 py-1">
+                <span
+                  key={tag}
+                  className="flex items-center gap-1.5 rounded-full border border-border px-3 py-1 font-mono text-[10px] uppercase tracking-label text-muted-foreground"
+                >
                   {skillIcons[tag]}
-                  <span className="capitalize">{tag.toLowerCase()}</span>
-                </Badge>
+                  {tag.toLowerCase()}
+                </span>
               ))}
             </div>
           </CardContent>
@@ -162,43 +203,39 @@ export function ResourceSidebar({
       )}
 
       {/* Actions */}
-      <Card>
-        <CardContent className="space-y-2 p-4">
-          {(resource.fileUrl || resource.embedUrl) && (
-            <Button asChild className="w-full">
-              <a href={resource.fileUrl || resource.embedUrl!} target="_blank" rel="noopener noreferrer">
-                {resource.fileUrl ? (
-                  <><Download className="mr-2 h-4 w-4" />Download</>
-                ) : (
-                  <><ExternalLink className="mr-2 h-4 w-4" />View Resource</>
-                )}
-              </a>
-            </Button>
+      <div className="space-y-2">
+        {(resource.fileUrl || resource.embedUrl) && (
+          <Button asChild className="w-full">
+            <a href={resource.fileUrl || resource.embedUrl!} target="_blank" rel="noopener noreferrer">
+              {resource.fileUrl ? (
+                <><Download className="mr-2 h-4 w-4" strokeWidth={1.5} />Download</>
+              ) : (
+                <><ExternalLink className="mr-2 h-4 w-4" strokeWidth={1.5} />View Resource</>
+              )}
+            </a>
+          </Button>
+        )}
+        <Button
+          variant={isBookmarked ? "default" : "outline"}
+          className="w-full"
+          onClick={onBookmark}
+          disabled={bookmarkPending}
+        >
+          {isBookmarked ? (
+            <><BookmarkCheck className="mr-2 h-4 w-4" strokeWidth={1.5} />Bookmarked</>
+          ) : (
+            <><Bookmark className="mr-2 h-4 w-4" strokeWidth={1.5} />Bookmark</>
           )}
-          <Button
-            variant={isBookmarked ? "default" : "outline"}
-            className="w-full"
-            onClick={onBookmark}
-            disabled={bookmarkPending}
-          >
-            {isBookmarked ? (
-              <><BookmarkCheck className="mr-2 h-4 w-4" />Bookmarked</>
-            ) : (
-              <><Bookmark className="mr-2 h-4 w-4" />Bookmark</>
-            )}
-          </Button>
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={() => {
-              if (isAuthenticated) onAddToCollection();
-            }}
-          >
-            <FolderPlus className="mr-2 h-4 w-4" />
-            Add to Collection
-          </Button>
-        </CardContent>
-      </Card>
+        </Button>
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={() => { if (isAuthenticated) onAddToCollection(); }}
+        >
+          <FolderPlus className="mr-2 h-4 w-4" strokeWidth={1.5} />
+          Add to Collection
+        </Button>
+      </div>
     </div>
   );
 }

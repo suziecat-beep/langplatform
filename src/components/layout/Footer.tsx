@@ -1,21 +1,36 @@
-import { BookOpen } from "lucide-react";
 import Link from "next/link";
 
 export function Footer() {
   return (
-    <footer className="border-t bg-background">
-      <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 py-6 md:flex-row">
-        <div className="flex items-center space-x-2">
-          <BookOpen className="h-5 w-5" />
-          <span className="text-sm font-semibold">LangPlatform</span>
+    <footer className="border-t border-border bg-background">
+      <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-6 px-4 py-8 md:flex-row md:items-center">
+        <div>
+          <span className="font-mono text-xs font-bold uppercase tracking-widest text-foreground">
+            LangPlatform
+          </span>
+          <p className="mt-1 font-mono text-[10px] uppercase tracking-label text-muted-foreground">
+            Language Learning Resources
+          </p>
         </div>
-        <nav className="flex items-center space-x-4 text-sm text-muted-foreground">
-          <Link href="/resources" className="hover:text-foreground">Resources</Link>
-          <Link href="/collections" className="hover:text-foreground">Collections</Link>
-          <Link href="/media" className="hover:text-foreground">Media Hub</Link>
+
+        <nav className="flex items-center gap-8">
+          {[
+            { href: "/resources", label: "Browse" },
+            { href: "/collections", label: "Collections" },
+            { href: "/media", label: "Media" },
+          ].map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="font-mono text-[10px] uppercase tracking-label text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {link.label}
+            </Link>
+          ))}
         </nav>
-        <p className="text-xs text-muted-foreground">
-          &copy; {new Date().getFullYear()} LangPlatform. All rights reserved.
+
+        <p className="font-mono text-[10px] uppercase tracking-label text-muted-foreground">
+          &copy; {new Date().getFullYear()} LangPlatform
         </p>
       </div>
     </footer>

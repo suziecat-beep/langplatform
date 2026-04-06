@@ -12,9 +12,9 @@ interface StarRatingProps {
 }
 
 const sizeClasses = {
-  sm: "h-3.5 w-3.5",
-  md: "h-5 w-5",
-  lg: "h-6 w-6",
+  sm: "h-3 w-3",
+  md: "h-4 w-4",
+  lg: "h-5 w-5",
 };
 
 export function StarRating({
@@ -25,7 +25,7 @@ export function StarRating({
   onRate,
 }: StarRatingProps) {
   return (
-    <div className="flex items-center">
+    <div className="flex items-center gap-0.5">
       {Array.from({ length: maxRating }, (_, i) => {
         const filled = i < Math.round(rating);
         return (
@@ -33,9 +33,13 @@ export function StarRating({
             key={i}
             className={cn(
               sizeClasses[size],
-              filled ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground/30",
-              interactive && "cursor-pointer transition-colors hover:text-yellow-400"
+              filled
+                ? "text-[#D4A843]"          /* Nothing warning amber — data status color */
+                : "text-muted-foreground/25",
+              interactive && "cursor-pointer transition-colors hover:text-[#D4A843]"
             )}
+            fill={filled ? "#D4A843" : "none"}
+            strokeWidth={filled ? 0 : 1.5}
             onClick={() => interactive && onRate?.(i + 1)}
           />
         );

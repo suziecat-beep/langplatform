@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import {
   Sheet,
@@ -9,7 +10,6 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { BookOpen } from "lucide-react";
 
 const navLinks = [
   { href: "/resources", label: "Browse Resources" },
@@ -25,48 +25,66 @@ interface MobileNavProps {
 
 export function MobileNav({ open, onClose }: MobileNavProps) {
   const { data: session } = useSession();
+  const pathname = usePathname();
 
   return (
     <Sheet open={open} onOpenChange={onClose}>
-      <SheetContent side="left" className="w-[300px] sm:w-[400px]">
-        <SheetHeader>
-          <SheetTitle className="flex items-center space-x-2">
-            <BookOpen className="h-5 w-5" />
-            <span>LangPlatform</span>
+      <SheetContent side="left" className="w-[280px] bg-background p-0">
+        <SheetHeader className="border-b border-border px-6 py-4">
+          <SheetTitle className="text-left">
+            <span className="font-mono text-sm font-bold uppercase tracking-widest text-foreground">
+              LangPlatform
+            </span>
           </SheetTitle>
         </SheetHeader>
-        <nav className="mt-6 flex flex-col space-y-3">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              onClick={onClose}
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground py-2"
-            >
-              {link.label}
-            </Link>
-          ))}
+
+        <nav className="flex flex-col px-6 py-6">
+          {navLinks.map((link) => {
+            const active = pathname === link.href || pathname.startsWith(link.href + "/");
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={onClose}
+                className={`border-b border-border py-4 font-mono text-xs uppercase tracking-label transition-colors ${
+                  active ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {active ? `[ ${link.label} ]` : link.label}
+              </Link>
+            );
+          })}
           {session?.user && (session.user as any).role === "ADMIN" && (
             <Link
               href="/admin"
               onClick={onClose}
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground py-2"
+              className="border-b border-border py-4 font-mono text-xs uppercase tracking-label text-muted-foreground hover:text-foreground transition-colors"
             >
-              Admin Panel
+              Admin
             </Link>
           )}
         </nav>
-        <div className="mt-6 flex flex-col space-y-2">
+
+        <div className="px-6 flex flex-col gap-3">
           {session?.user ? (
-            <Button variant="outline" onClick={() => { signOut(); onClose(); }}>
-              Log out
-            </Button>
+            <>
+              <p className="font-mono text-[10px] uppercase tracking-label text-muted-foreground">
+                {session.user.name}
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => { signOut(); onClose(); }}
+              >
+                Sign Out
+              </Button>
+            </>
           ) : (
             <>
-              <Button variant="outline" asChild>
+              <Button variant="outline" size="sm" asChild>
                 <Link href="/login" onClick={onClose}>Sign In</Link>
               </Button>
-              <Button asChild>
+              <Button size="sm" asChild>
                 <Link href="/register" onClick={onClose}>Sign Up</Link>
               </Button>
             </>
