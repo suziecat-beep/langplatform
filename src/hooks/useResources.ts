@@ -25,7 +25,13 @@ async function fetchResources(filters: ResourceFilters) {
 
 async function fetchResource(id: string) {
   const res = await fetch(`/api/resources/${id}`);
-  if (!res.ok) throw new Error("Failed to fetch resource");
+  if (!res.ok) {
+    const err = new Error(
+      res.status === 404 ? "Resource not found" : "Failed to fetch resource"
+    );
+    (err as any).status = res.status;
+    throw err;
+  }
   return res.json();
 }
 

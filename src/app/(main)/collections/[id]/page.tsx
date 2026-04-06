@@ -21,7 +21,7 @@ export default function CollectionDetailPage() {
   const router = useRouter();
   const { toast } = useToast();
   const { user } = useAuth();
-  const { data, isLoading } = useCollection(id);
+  const { data, isLoading, isError, error } = useCollection(id);
   const forkCollection = useForkCollection();
   const removeItem = useRemoveFromCollection();
 
@@ -51,6 +51,15 @@ export default function CollectionDetailPage() {
 
   if (isLoading) {
     return <div className="space-y-4"><Skeleton className="h-10 w-2/3" /><Skeleton className="h-6 w-1/3" /><Skeleton className="h-64 w-full" /></div>;
+  }
+
+  if (isError) {
+    const is404 = (error as any)?.status === 404;
+    return (
+      <div className="py-12 text-center text-muted-foreground">
+        {is404 ? "Collection not found" : "Something went wrong. Please try again later."}
+      </div>
+    );
   }
 
   if (!collection) {

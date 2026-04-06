@@ -86,7 +86,7 @@ export async function POST(request: Request) {
         thumbnailUrl: data.thumbnailUrl || null,
         content: data.content || null,
         contributorId: session.user.id,
-        status: "PENDING",
+        status: "APPROVED",
       },
       include: {
         contributor: { select: { id: true, name: true, avatarUrl: true } },

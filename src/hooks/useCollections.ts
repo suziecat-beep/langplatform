@@ -28,7 +28,13 @@ export function useCollection(id: string) {
     queryKey: ["collection", id],
     queryFn: async () => {
       const res = await fetch(`/api/collections/${id}`);
-      if (!res.ok) throw new Error("Failed to fetch collection");
+      if (!res.ok) {
+        const err = new Error(
+          res.status === 404 ? "Collection not found" : "Failed to fetch collection"
+        );
+        (err as any).status = res.status;
+        throw err;
+      }
       return res.json();
     },
     enabled: !!id,

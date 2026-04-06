@@ -27,7 +27,7 @@ export default function ResourceDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
   const { isAuthenticated, user } = useAuth();
-  const { data: resourceData, isLoading } = useResource(id);
+  const { data: resourceData, isLoading, isError, error } = useResource(id);
   const { data: reviewsData } = useReviews(id);
   const createReview = useCreateReview();
   const voteReview = useVoteReview();
@@ -110,6 +110,15 @@ export default function ResourceDetailPage() {
         <Skeleton className="h-6 w-2/3" />
         <Skeleton className="h-4 w-1/3" />
         <Skeleton className="h-40 w-full" />
+      </div>
+    );
+  }
+
+  if (isError) {
+    const is404 = (error as any)?.status === 404;
+    return (
+      <div className="py-12 text-center text-muted-foreground">
+        {is404 ? "Resource not found" : "Something went wrong. Please try again later."}
       </div>
     );
   }
