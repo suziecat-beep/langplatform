@@ -19,7 +19,6 @@ export async function GET(
           include: { user: { select: { id: true, name: true, avatarUrl: true } } },
           orderBy: { helpfulnessVotes: "desc" },
         },
-        tags: true,
         _count: { select: { reviews: true } },
       },
     });
