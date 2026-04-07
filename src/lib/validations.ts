@@ -52,6 +52,7 @@ export const queryParamsSchema = z.object({
   skillTag: z.enum(skillTags).optional(),
   sort: z.enum(["rating", "recent", "popular"]).optional(),
   search: z.string().optional(),
+  contributorId: z.string().optional(),
 });
 
 export function validateRequest<T>(schema: z.ZodType<T>, data: unknown): { data?: T; errors?: string } {

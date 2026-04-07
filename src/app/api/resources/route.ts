@@ -12,10 +12,23 @@ export async function GET(request: Request) {
     if (!params.success) {
       return NextResponse.json({ error: "Invalid query parameters" }, { status: 400 });
     }
-    const { page, limit, language, proficiencyLevel: _proficiencyLevel, level, resourceType, skillTag, sort, search } = params.data;
+    const { page, limit, language, proficiencyLevel: _proficiencyLevel, level, resourceType, skillTag, sort, search, contributorId } = params.data;
     const proficiencyLevel = _proficiencyLevel || level;
 
-    const where: Prisma.ResourceWhereInput = { status: "APPROVED" };
+    const where: Prisma.ResourceWhereInput = {};
+
+    // When filtering by contributorId, verify it matches the session user and show all statuses
+    // Otherwise only show approved resources
+    if (contributorId) {
+      const session = await getServerSession(authOptions);
+      if (session?.user?.id === contributorId) {
+        where.contributorId = contributorId;
+      } else {
+        where.status = "APPROVED";
+      }
+    } else {
+      where.status = "APPROVED";
+    }
     if (language) where.language = language;
     if (proficiencyLevel) where.proficiencyLevel = proficiencyLevel;
     if (resourceType) where.resourceType = resourceType;
@@ -86,7 +99,7 @@ export async function POST(request: Request) {
         thumbnailUrl: data.thumbnailUrl || null,
         content: data.content || null,
         contributorId: session.user.id,
-        status: "APPROVED",
+        status: "PENDING",
       },
       include: {
         contributor: { select: { id: true, name: true, avatarUrl: true } },

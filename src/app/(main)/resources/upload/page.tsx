@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod/v4";
 import { useAuth } from "@/hooks/useAuth";
 import { useCreateResource, useUploadFile } from "@/hooks/useResources";
 import { useToast } from "@/components/ui/use-toast";
@@ -18,12 +21,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { proficiencyLevels, resourceTypes, skillTags } from "@/lib/validations";
-import { Upload, X, FileText, CheckCircle } from "lucide-react";
+import {
+  createResourceSchema,
+  proficiencyLevels,
+  resourceTypes,
+  skillTags,
+} from "@/lib/validations";
+import { Upload, X, FileText, CheckCircle, ArrowLeft } from "lucide-react";
 
 const languages = [
   "japanese", "french", "spanish", "korean", "german", "chinese", "italian", "portuguese",
 ];
+
+type FormData = z.infer<typeof createResourceSchema>;
 
 export default function UploadResourcePage() {
   const router = useRouter();
@@ -34,23 +44,40 @@ export default function UploadResourcePage() {
 
   const [step, setStep] = useState(1);
   const [file, setFile] = useState<File | null>(null);
-  const [fileUrl, setFileUrl] = useState("");
-  const [embedUrl, setEmbedUrl] = useState("");
   const [uploading, setUploading] = useState(false);
 
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [language, setLanguage] = useState("");
-  const [level, setLevel] = useState("");
-  const [type, setType] = useState("");
-  const [skills, setSkills] = useState<string[]>([]);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    reset,
+    formState: { errors },
+  } = useForm<FormData>({
+    resolver: zodResolver(createResourceSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      content: "",
+      language: "",
+      proficiencyLevel: "A1",
+      resourceType: "TEXTBOOK",
+      skillTags: [],
+      fileUrl: "",
+      embedUrl: "",
+      thumbnailUrl: "",
+    },
+  });
+
+  const watchedSkills = watch("skillTags");
+  const watchedEmbedUrl = watch("embedUrl");
+  const watchedFileUrl = watch("fileUrl");
 
   if (!isContributor) {
     return (
       <div className="py-12 text-center">
-        <h2 className="text-2xl font-bold">Contributor Access Required</h2>
-        <p className="mt-2 text-muted-foreground">
+        <h2 className="text-2xl font-bold tracking-tight">Contributor Access Required</h2>
+        <p className="mt-2 text-[var(--nd-text-secondary)]">
           You need a Contributor role to upload resources.
         </p>
       </div>
@@ -62,9 +89,9 @@ export default function UploadResourcePage() {
     setUploading(true);
     try {
       const url = await uploadFile.mutateAsync({ file });
-      setFileUrl(url);
+      setValue("fileUrl", url);
       setStep(2);
-      toast({ title: "File uploaded!" });
+      toast({ title: "File uploaded" });
     } catch (err: any) {
       toast({ title: "Upload failed", description: err.message, variant: "destructive" });
     } finally {
@@ -72,29 +99,14 @@ export default function UploadResourcePage() {
     }
   };
 
-  const handleSubmit = async () => {
-    const newErrors: Record<string, string> = {};
-    if (!title.trim()) newErrors.title = "Title is required";
-    if (!description.trim()) newErrors.description = "Description is required";
-    if (!language) newErrors.language = "Please select a language";
-    if (!level) newErrors.level = "Please select a proficiency level";
-    if (!type) newErrors.type = "Please select a resource type";
-    if (skills.length === 0) newErrors.skills = "Select at least one skill tag";
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
-    setErrors({});
+  const onSubmit = async (data: FormData) => {
     try {
       await createResource.mutateAsync({
-        title,
-        description,
-        language,
-        proficiencyLevel: level,
-        resourceType: type,
-        skillTags: skills,
-        fileUrl: fileUrl || undefined,
-        embedUrl: embedUrl || undefined,
+        ...data,
+        fileUrl: data.fileUrl || undefined,
+        embedUrl: data.embedUrl || undefined,
+        thumbnailUrl: data.thumbnailUrl || undefined,
+        content: data.content || undefined,
       });
       setStep(3);
     } catch (err: any) {
@@ -103,40 +115,74 @@ export default function UploadResourcePage() {
   };
 
   const toggleSkill = (skill: string) => {
-    setSkills((prev) =>
-      prev.includes(skill) ? prev.filter((s) => s !== skill) : [...prev, skill]
-    );
+    const current = watchedSkills || [];
+    const updated = current.includes(skill as any)
+      ? current.filter((s) => s !== skill)
+      : [...current, skill as (typeof skillTags)[number]];
+    setValue("skillTags", updated, { shouldValidate: true });
   };
 
+  const resetForm = () => {
+    reset();
+    setFile(null);
+    setStep(1);
+  };
+
+  const stepLabels = ["File or Link", "Details", "Done"];
+
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
-      <h1 className="text-3xl font-bold">Upload Resource</h1>
+    <div className="mx-auto max-w-2xl space-y-8 pb-12">
+      {/* Header */}
+      <div>
+        <p className="text-xs font-medium uppercase tracking-widest text-[var(--nd-text-secondary)]">
+          Contribute
+        </p>
+        <h1 className="mt-1 text-3xl font-bold tracking-tight">Upload Resource</h1>
+      </div>
 
       {/* Step indicator */}
-      <div className="flex items-center gap-2">
-        {[1, 2, 3].map((s) => (
-          <div
-            key={s}
-            className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium ${
-              s === step
-                ? "bg-primary text-primary-foreground"
-                : s < step
-                ? "bg-green-500 text-white"
-                : "bg-muted text-muted-foreground"
-            }`}
-          >
-            {s < step ? <CheckCircle className="h-5 w-5" /> : s}
-          </div>
-        ))}
+      <div className="flex items-center gap-3">
+        {stepLabels.map((label, i) => {
+          const s = i + 1;
+          const isActive = s === step;
+          const isComplete = s < step;
+          return (
+            <div key={s} className="flex items-center gap-2">
+              <div
+                className={`flex h-7 w-7 items-center justify-center text-xs font-bold transition-colors ${
+                  isActive
+                    ? "bg-[var(--nd-text-display)] text-white"
+                    : isComplete
+                    ? "bg-[var(--nd-success)] text-white"
+                    : "border border-[var(--nd-border-visible)] text-[var(--nd-text-disabled)]"
+                }`}
+              >
+                {isComplete ? <CheckCircle className="h-4 w-4" /> : s}
+              </div>
+              <span
+                className={`text-xs font-medium ${
+                  isActive ? "text-[var(--nd-text-primary)]" : "text-[var(--nd-text-disabled)]"
+                }`}
+              >
+                {label}
+              </span>
+              {i < stepLabels.length - 1 && (
+                <div className="mx-1 h-px w-8 bg-[var(--nd-border-visible)]" />
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {/* Step 1: File */}
       {step === 1 && (
-        <Card>
-          <CardHeader><CardTitle>Step 1: File or Link</CardTitle></CardHeader>
+        <Card className="border-[var(--nd-border-visible)] shadow-none">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg font-bold tracking-tight">File or Link</CardTitle>
+          </CardHeader>
           <CardContent className="space-y-4">
             <div
-              className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-8 text-center cursor-pointer hover:border-primary/50"
+              className="flex cursor-pointer flex-col items-center justify-center border-2 border-dashed border-[var(--nd-border-visible)] p-10 text-center transition-colors hover:border-[var(--nd-text-display)]"
               onClick={() => document.getElementById("file-input")?.click()}
               onDragOver={(e) => e.preventDefault()}
               onDrop={(e) => {
@@ -145,11 +191,13 @@ export default function UploadResourcePage() {
                 if (f) setFile(f);
               }}
             >
-              <Upload className="h-10 w-10 text-muted-foreground" />
-              <p className="mt-2 font-medium">
+              <Upload className="h-8 w-8 text-[var(--nd-text-disabled)]" />
+              <p className="mt-3 text-sm font-medium">
                 {file ? file.name : "Drag & drop or click to upload"}
               </p>
-              <p className="text-sm text-muted-foreground">PDF, images, audio, video, zip — Max 50 MB</p>
+              <p className="mt-1 text-xs text-[var(--nd-text-secondary)]">
+                PDF, images, audio, video, zip — Max 50 MB
+              </p>
               <input
                 id="file-input"
                 type="file"
@@ -158,18 +206,22 @@ export default function UploadResourcePage() {
                 onChange={(e) => setFile(e.target.files?.[0] || null)}
               />
             </div>
+
             {file && (
-              <div className="flex items-center justify-between rounded-lg border p-3">
+              <div className="flex items-center justify-between border border-[var(--nd-border-visible)] p-3">
                 <div className="flex items-center gap-2">
                   <FileText className="h-5 w-5" />
-                  <span className="text-sm">{file.name}</span>
-                  <span className="text-xs text-muted-foreground">({(file.size / 1024 / 1024).toFixed(1)} MB)</span>
+                  <span className="text-sm font-medium">{file.name}</span>
+                  <span className="text-xs text-[var(--nd-text-secondary)]">
+                    ({(file.size / 1024 / 1024).toFixed(1)} MB)
+                  </span>
                 </div>
                 <Button variant="ghost" size="icon" onClick={() => setFile(null)}>
                   <X className="h-4 w-4" />
                 </Button>
               </div>
             )}
+
             {file && (
               <Button onClick={handleFileUpload} disabled={uploading} className="w-full">
                 {uploading ? "Uploading..." : "Upload File"}
@@ -177,19 +229,24 @@ export default function UploadResourcePage() {
             )}
 
             <div className="relative my-4">
-              <div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">Or paste a link</span>
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-[var(--nd-border-visible)]" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase tracking-widest">
+                <span className="bg-card px-3 text-[var(--nd-text-secondary)]">Or paste a link</span>
               </div>
             </div>
 
             <Input
               placeholder="https://youtube.com/watch?v=..."
-              value={embedUrl}
-              onChange={(e) => setEmbedUrl(e.target.value)}
+              {...register("embedUrl")}
+              className="border-[var(--nd-border-visible)]"
             />
-            {embedUrl && (
-              <Button onClick={() => setStep(2)} className="w-full">Continue with Link</Button>
+
+            {watchedEmbedUrl && (
+              <Button onClick={() => setStep(2)} className="w-full">
+                Continue with Link
+              </Button>
             )}
           </CardContent>
         </Card>
@@ -197,100 +254,205 @@ export default function UploadResourcePage() {
 
       {/* Step 2: Metadata */}
       {step === 2 && (
-        <Card>
-          <CardHeader><CardTitle>Step 2: Resource Details</CardTitle></CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="title">Title</Label>
-              <Input id="title" value={title} onChange={(e) => { setTitle(e.target.value); setErrors((prev) => ({ ...prev, title: "" })); }} placeholder="e.g. Genki I: Elementary Japanese" className={errors.title ? "border-red-500" : ""} />
-              {errors.title && <p className="text-sm text-red-500 mt-1">{errors.title}</p>}
-            </div>
-            <div>
-              <Label htmlFor="description">Description</Label>
-              <Textarea id="description" value={description} onChange={(e) => { setDescription(e.target.value); setErrors((prev) => ({ ...prev, description: "" })); }} placeholder="Describe the resource..." rows={4} className={errors.description ? "border-red-500" : ""} />
-              {errors.description && <p className="text-sm text-red-500 mt-1">{errors.description}</p>}
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Language</Label>
-                <Select value={language} onValueChange={(v) => { setLanguage(v); setErrors((prev) => ({ ...prev, language: "" })); }}>
-                  <SelectTrigger className={errors.language ? "border-red-500" : ""}><SelectValue placeholder="Select" /></SelectTrigger>
+        <Card className="border-[var(--nd-border-visible)] shadow-none">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg font-bold tracking-tight">Resource Details</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+              {/* Title */}
+              <div className="space-y-1.5">
+                <Label htmlFor="title" className="text-xs font-bold uppercase tracking-widest">
+                  Title
+                </Label>
+                <Input
+                  id="title"
+                  placeholder="e.g. Genki I: Elementary Japanese"
+                  {...register("title")}
+                  className={errors.title ? "border-destructive" : "border-[var(--nd-border-visible)]"}
+                />
+                {errors.title && (
+                  <p className="text-xs text-destructive">{errors.title.message}</p>
+                )}
+              </div>
+
+              {/* Description */}
+              <div className="space-y-1.5">
+                <Label htmlFor="description" className="text-xs font-bold uppercase tracking-widest">
+                  Description
+                </Label>
+                <Textarea
+                  id="description"
+                  placeholder="Describe the resource..."
+                  rows={4}
+                  {...register("description")}
+                  className={errors.description ? "border-destructive" : "border-[var(--nd-border-visible)]"}
+                />
+                {errors.description && (
+                  <p className="text-xs text-destructive">{errors.description.message}</p>
+                )}
+              </div>
+
+              {/* Content (markdown) */}
+              <div className="space-y-1.5">
+                <Label htmlFor="content" className="text-xs font-bold uppercase tracking-widest">
+                  Content <span className="font-normal normal-case text-[var(--nd-text-secondary)]">(optional, markdown supported)</span>
+                </Label>
+                <Textarea
+                  id="content"
+                  placeholder="Add detailed content, notes, or instructions in markdown..."
+                  rows={6}
+                  {...register("content")}
+                  className="border-[var(--nd-border-visible)] font-mono text-sm"
+                />
+              </div>
+
+              {/* Language + Level grid */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-bold uppercase tracking-widest">Language</Label>
+                  <Select
+                    value={watch("language")}
+                    onValueChange={(v) => setValue("language", v, { shouldValidate: true })}
+                  >
+                    <SelectTrigger
+                      className={errors.language ? "border-destructive" : "border-[var(--nd-border-visible)]"}
+                    >
+                      <SelectValue placeholder="Select" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {languages.map((l) => (
+                        <SelectItem key={l} value={l} className="capitalize">
+                          {l}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.language && (
+                    <p className="text-xs text-destructive">{errors.language.message}</p>
+                  )}
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-bold uppercase tracking-widest">Level</Label>
+                  <Select
+                    value={watch("proficiencyLevel")}
+                    onValueChange={(v: any) => setValue("proficiencyLevel", v, { shouldValidate: true })}
+                  >
+                    <SelectTrigger className="border-[var(--nd-border-visible)]">
+                      <SelectValue placeholder="Select" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {proficiencyLevels.map((l) => (
+                        <SelectItem key={l} value={l}>
+                          {l}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Resource Type */}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold uppercase tracking-widest">Resource Type</Label>
+                <Select
+                  value={watch("resourceType")}
+                  onValueChange={(v: any) => setValue("resourceType", v, { shouldValidate: true })}
+                >
+                  <SelectTrigger className="border-[var(--nd-border-visible)]">
+                    <SelectValue placeholder="Select" />
+                  </SelectTrigger>
                   <SelectContent>
-                    {languages.map((l) => (
-                      <SelectItem key={l} value={l} className="capitalize">{l}</SelectItem>
+                    {resourceTypes.map((t) => (
+                      <SelectItem key={t} value={t} className="capitalize">
+                        {t.toLowerCase().replace("_", " ")}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                {errors.language && <p className="text-sm text-red-500 mt-1">{errors.language}</p>}
               </div>
-              <div>
-                <Label>Proficiency Level</Label>
-                <Select value={level} onValueChange={(v) => { setLevel(v); setErrors((prev) => ({ ...prev, level: "" })); }}>
-                  <SelectTrigger className={errors.level ? "border-red-500" : ""}><SelectValue placeholder="Select" /></SelectTrigger>
-                  <SelectContent>
-                    {proficiencyLevels.map((l) => (
-                      <SelectItem key={l} value={l}>{l}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.level && <p className="text-sm text-red-500 mt-1">{errors.level}</p>}
+
+              {/* Skill Tags */}
+              <div className="space-y-2">
+                <Label className="text-xs font-bold uppercase tracking-widest">Skill Tags</Label>
+                <div className="flex flex-wrap gap-2">
+                  {skillTags.map((tag) => {
+                    const isSelected = watchedSkills?.includes(tag);
+                    return (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => toggleSkill(tag)}
+                        className={`border px-3 py-1.5 text-xs font-medium uppercase tracking-wider transition-colors ${
+                          isSelected
+                            ? "border-[var(--nd-text-display)] bg-[var(--nd-text-display)] text-white"
+                            : "border-[var(--nd-border-visible)] text-[var(--nd-text-secondary)] hover:border-[var(--nd-text-primary)]"
+                        }`}
+                      >
+                        {tag.toLowerCase()}
+                      </button>
+                    );
+                  })}
+                </div>
+                {errors.skillTags && (
+                  <p className="text-xs text-destructive">{errors.skillTags.message}</p>
+                )}
               </div>
-            </div>
-            <div>
-              <Label>Resource Type</Label>
-              <Select value={type} onValueChange={(v) => { setType(v); setErrors((prev) => ({ ...prev, type: "" })); }}>
-                <SelectTrigger className={errors.type ? "border-red-500" : ""}><SelectValue placeholder="Select" /></SelectTrigger>
-                <SelectContent>
-                  {resourceTypes.map((t) => (
-                    <SelectItem key={t} value={t} className="capitalize">{t.toLowerCase().replace("_", " ")}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.type && <p className="text-sm text-red-500 mt-1">{errors.type}</p>}
-            </div>
-            <div>
-              <Label>Skill Tags</Label>
-              <div className="mt-2 flex flex-wrap gap-3">
-                {skillTags.map((tag) => (
-                  <label key={tag} className="flex items-center gap-2 text-sm">
-                    <Checkbox
-                      checked={skills.includes(tag)}
-                      onCheckedChange={() => toggleSkill(tag)}
-                    />
-                    <span className="capitalize">{tag.toLowerCase()}</span>
-                  </label>
-                ))}
+
+              {/* Thumbnail URL */}
+              <div className="space-y-1.5">
+                <Label htmlFor="thumbnailUrl" className="text-xs font-bold uppercase tracking-widest">
+                  Thumbnail URL <span className="font-normal normal-case text-[var(--nd-text-secondary)]">(optional)</span>
+                </Label>
+                <Input
+                  id="thumbnailUrl"
+                  placeholder="https://example.com/image.jpg"
+                  {...register("thumbnailUrl")}
+                  className="border-[var(--nd-border-visible)]"
+                />
               </div>
-              {errors.skills && <p className="text-sm text-red-500 mt-1">{errors.skills}</p>}
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setStep(1)}>Back</Button>
-              <Button
-                onClick={handleSubmit}
-                disabled={!title || !description || !language || !level || !type || skills.length === 0 || createResource.isPending}
-                className="flex-1"
-              >
-                {createResource.isPending ? "Submitting..." : "Submit for Review"}
-              </Button>
-            </div>
+
+              {/* Actions */}
+              <div className="flex gap-3 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setStep(1)}
+                  className="border-[var(--nd-border-visible)]"
+                >
+                  <ArrowLeft className="mr-1.5 h-4 w-4" />
+                  Back
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={createResource.isPending}
+                  className="flex-1"
+                >
+                  {createResource.isPending ? "Submitting..." : "Submit for Review"}
+                </Button>
+              </div>
+            </form>
           </CardContent>
         </Card>
       )}
 
       {/* Step 3: Success */}
       {step === 3 && (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <CheckCircle className="mx-auto h-16 w-16 text-green-500" />
-            <h2 className="mt-4 text-2xl font-bold">Resource Submitted!</h2>
-            <p className="mt-2 text-muted-foreground">
-              Your resource has been submitted and will be reviewed by a moderator.
+        <Card className="border-[var(--nd-border-visible)] shadow-none">
+          <CardContent className="py-16 text-center">
+            <CheckCircle className="mx-auto h-14 w-14 text-[var(--nd-success)]" />
+            <h2 className="mt-5 text-2xl font-bold tracking-tight">Resource Submitted</h2>
+            <p className="mt-2 text-sm text-[var(--nd-text-secondary)]">
+              Your resource is pending review by a moderator.
             </p>
-            <div className="mt-6 flex justify-center gap-2">
-              <Button variant="outline" onClick={() => { setStep(1); setFile(null); setFileUrl(""); setEmbedUrl(""); setTitle(""); setDescription(""); setLanguage(""); setLevel(""); setType(""); setSkills([]); }}>
+            <div className="mt-8 flex justify-center gap-3">
+              <Button variant="outline" onClick={resetForm} className="border-[var(--nd-border-visible)]">
                 Upload Another
               </Button>
-              <Button onClick={() => router.push("/dashboard")}>Go to Dashboard</Button>
+              <Button onClick={() => router.push("/dashboard?tab=uploads")}>
+                View My Uploads
+              </Button>
             </div>
           </CardContent>
         </Card>

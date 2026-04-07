@@ -38,7 +38,7 @@ export default function DashboardPage() {
   const [bookmarkFilter, setBookmarkFilter] = useState<string | undefined>(undefined);
   const { data: bookmarksData } = useBookmarks(bookmarkFilter);
   const { data: collectionsData } = useCollections();
-  const { data: uploadsData } = useResources({ limit: 50 });
+  const { data: uploadsData } = useResources({ limit: 50, contributorId: user?.id });
   const updateBookmark = useUpdateBookmark();
   const deleteBookmark = useDeleteBookmark();
 
@@ -140,9 +140,9 @@ export default function DashboardPage() {
         {isContributor && (
           <TabsContent value="uploads" className="space-y-4 mt-4">
             <Button asChild><Link href="/resources/upload"><Upload className="mr-2 h-4 w-4" /> Upload Resource</Link></Button>
-            {uploadsData?.data?.filter((r: any) => r.contributor?.id === user?.id).length > 0 ? (
+            {uploadsData?.data?.length > 0 ? (
               <div className="space-y-3">
-                {uploadsData.data.filter((r: any) => r.contributor?.id === user?.id).map((resource: any) => (
+                {uploadsData.data.map((resource: any) => (
                   <Card key={resource.id}>
                     <CardContent className="flex items-center gap-4 p-4">
                       <div className="flex-1">

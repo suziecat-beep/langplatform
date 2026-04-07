@@ -11,6 +11,7 @@ interface ResourceFilters {
   skillTag?: string;
   sort?: string;
   search?: string;
+  contributorId?: string;
 }
 
 async function fetchResources(filters: ResourceFilters) {
