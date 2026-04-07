@@ -60,6 +60,7 @@ async function main() {
       resourceType: "TEXTBOOK" as const,
       skillTags: ["READING" as const, "GRAMMAR" as const],
       contributorId: yukiT.id,
+      embedUrl: "https://genki.japantimes.co.jp/",
       thumbnailUrl: "https://picsum.photos/seed/genki-i/640/360",
     },
     {
@@ -71,6 +72,7 @@ async function main() {
       resourceType: "TEXTBOOK" as const,
       skillTags: ["READING" as const, "GRAMMAR" as const],
       contributorId: yukiT.id,
+      embedUrl: "https://genki.japantimes.co.jp/",
       thumbnailUrl: "https://picsum.photos/seed/genki-ii/640/360",
     },
     {
@@ -94,6 +96,7 @@ async function main() {
       resourceType: "AUDIO" as const,
       skillTags: ["LISTENING" as const, "SPEAKING" as const],
       contributorId: yukiT.id,
+      embedUrl: "https://www.japanesepod101.com/",
       thumbnailUrl: "https://picsum.photos/seed/jp-listening/640/360",
     },
     {
@@ -105,6 +108,7 @@ async function main() {
       resourceType: "TEXTBOOK" as const,
       skillTags: ["READING" as const, "GRAMMAR" as const, "VOCABULARY" as const],
       contributorId: admin.id,
+      embedUrl: "https://tobiraweb.9640.jp/",
       thumbnailUrl: "https://picsum.photos/seed/tobira/640/360",
     },
     {
@@ -116,7 +120,7 @@ async function main() {
       resourceType: "FLASHCARD_DECK" as const,
       skillTags: ["READING" as const, "VOCABULARY" as const],
       contributorId: yukiT.id,
-      fileUrl: "/files/jlpt-n3-kanji-deck.apkg",
+      embedUrl: "https://ankiweb.net/shared/info/1956010488",
       thumbnailUrl: "https://picsum.photos/seed/jlpt-n3-kanji/640/360",
     },
     {
@@ -128,6 +132,7 @@ async function main() {
       resourceType: "GRADED_READER" as const,
       skillTags: ["READING" as const],
       contributorId: contributor.id,
+      embedUrl: "https://tadoku.org/japanese/en/free-books-en/",
       thumbnailUrl: "https://picsum.photos/seed/jp-graded-readers/640/360",
     },
     {
@@ -139,6 +144,7 @@ async function main() {
       resourceType: "AUDIO" as const,
       skillTags: ["LISTENING" as const, "SPEAKING" as const],
       contributorId: admin.id,
+      embedUrl: "https://www.amazon.co.jp/dp/4874243916",
       thumbnailUrl: "https://picsum.photos/seed/shadowing-jp/640/360",
     },
 
@@ -164,6 +170,7 @@ async function main() {
       resourceType: "TEXTBOOK" as const,
       skillTags: ["READING" as const, "GRAMMAR" as const, "VOCABULARY" as const],
       contributorId: admin.id,
+      embedUrl: "https://www.hachettefle.com/adultes/pages/alter-ego-plus",
       thumbnailUrl: "https://picsum.photos/seed/alter-ego/640/360",
     },
     {
@@ -187,6 +194,7 @@ async function main() {
       resourceType: "GRADED_READER" as const,
       skillTags: ["READING" as const, "VOCABULARY" as const],
       contributorId: admin.id,
+      embedUrl: "https://www.lire-en-francais.com/le-petit-prince/",
       thumbnailUrl: "https://picsum.photos/seed/petit-prince/640/360",
     },
     {
@@ -198,7 +206,7 @@ async function main() {
       resourceType: "WORKSHEET" as const,
       skillTags: ["GRAMMAR" as const, "WRITING" as const],
       contributorId: marieD.id,
-      fileUrl: "/files/french-grammar-subjunctive.pdf",
+      embedUrl: "https://www.lawlessfrench.com/grammar/subjunctive/",
       thumbnailUrl: "https://picsum.photos/seed/french-subjunctive/640/360",
     },
     {
@@ -222,7 +230,7 @@ async function main() {
       resourceType: "FLASHCARD_DECK" as const,
       skillTags: ["VOCABULARY" as const],
       contributorId: marieD.id,
-      fileUrl: "/files/french-b1-vocabulary.apkg",
+      embedUrl: "https://ankiweb.net/shared/info/893324022",
       thumbnailUrl: "https://picsum.photos/seed/french-b1-vocab/640/360",
     },
 
@@ -236,7 +244,7 @@ async function main() {
       resourceType: "WORKSHEET" as const,
       skillTags: ["GRAMMAR" as const, "WRITING" as const],
       contributorId: carlosM.id,
-      fileUrl: "/files/spanish-verb-conjugation-drills.pdf",
+      embedUrl: "https://www.conjugacion.es/",
       thumbnailUrl: "https://picsum.photos/seed/spanish-verbs/640/360",
     },
     {
@@ -248,6 +256,7 @@ async function main() {
       resourceType: "TEXTBOOK" as const,
       skillTags: ["READING" as const, "GRAMMAR" as const, "SPEAKING" as const],
       contributorId: admin.id,
+      embedUrl: "https://www.difusion.com/aula-internacional-nueva-edicion-1-libro-del-alumno-ejercicios-cd/",
       thumbnailUrl: "https://picsum.photos/seed/aula-internacional/640/360",
     },
     {
@@ -283,6 +292,7 @@ async function main() {
       resourceType: "GRADED_READER" as const,
       skillTags: ["READING" as const, "VOCABULARY" as const],
       contributorId: carlosM.id,
+      embedUrl: "https://www.amazon.com/dp/1838574085",
       thumbnailUrl: "https://picsum.photos/seed/spanish-stories/640/360",
     },
     {
@@ -294,7 +304,7 @@ async function main() {
       resourceType: "WORKSHEET" as const,
       skillTags: ["WRITING" as const, "GRAMMAR" as const],
       contributorId: admin.id,
-      fileUrl: "/files/spanish-writing-prompts.pdf",
+      embedUrl: "https://www.profedeele.es/actividad/expresion-escrita/",
       thumbnailUrl: "https://picsum.photos/seed/spanish-writing/640/360",
     },
     {
@@ -318,7 +328,7 @@ async function main() {
       resourceType: "WORKSHEET" as const,
       skillTags: ["READING" as const, "WRITING" as const, "LISTENING" as const, "SPEAKING" as const],
       contributorId: admin.id,
-      fileUrl: "/files/dele-b2-exam-prep.pdf",
+      embedUrl: "https://www.cervantes.es/lengua_y_ensenanza/certificados_espanol/dele/informacion_general.htm",
       thumbnailUrl: "https://picsum.photos/seed/dele-b2/640/360",
     },
     {
@@ -330,7 +340,7 @@ async function main() {
       resourceType: "FLASHCARD_DECK" as const,
       skillTags: ["GRAMMAR" as const, "VOCABULARY" as const],
       contributorId: carlosM.id,
-      fileUrl: "/files/spanish-irregular-verbs.apkg",
+      embedUrl: "https://ankiweb.net/shared/info/638411706",
       thumbnailUrl: "https://picsum.photos/seed/spanish-irregular/640/360",
     },
     {
@@ -356,6 +366,7 @@ async function main() {
       resourceType: "TEXTBOOK" as const,
       skillTags: ["READING" as const, "GRAMMAR" as const, "SPEAKING" as const],
       contributorId: priyaS.id,
+      embedUrl: "https://talktomeinkorean.com/curriculum/level-1/",
       thumbnailUrl: "https://picsum.photos/seed/ttmik-level1/640/360",
     },
     {
@@ -379,7 +390,7 @@ async function main() {
       resourceType: "FLASHCARD_DECK" as const,
       skillTags: ["VOCABULARY" as const, "READING" as const],
       contributorId: priyaS.id,
-      fileUrl: "/files/topik-i-vocabulary.apkg",
+      embedUrl: "https://ankiweb.net/shared/info/4066961604",
       thumbnailUrl: "https://picsum.photos/seed/topik-vocab/640/360",
     },
 
@@ -393,6 +404,7 @@ async function main() {
       resourceType: "TEXTBOOK" as const,
       skillTags: ["READING" as const, "GRAMMAR" as const, "WRITING" as const],
       contributorId: priyaS.id,
+      embedUrl: "https://cheng-tsui.com/browse/chinese/integrated-chinese-level-1-part-1-4th-ed",
       thumbnailUrl: "https://picsum.photos/seed/integrated-chinese/640/360",
     },
     {
@@ -416,6 +428,7 @@ async function main() {
       resourceType: "GRADED_READER" as const,
       skillTags: ["READING" as const, "VOCABULARY" as const],
       contributorId: priyaS.id,
+      embedUrl: "https://www.hsk.academy/en/hsk-3",
       thumbnailUrl: "https://picsum.photos/seed/hsk3-reading/640/360",
     },
 
@@ -429,6 +442,7 @@ async function main() {
       resourceType: "TEXTBOOK" as const,
       skillTags: ["READING" as const, "GRAMMAR" as const, "VOCABULARY" as const],
       contributorId: priyaS.id,
+      embedUrl: "https://www.hueber.de/menschen",
       thumbnailUrl: "https://picsum.photos/seed/menschen-a1/640/360",
     },
     {
@@ -464,7 +478,7 @@ async function main() {
       resourceType: "WORKSHEET" as const,
       skillTags: ["GRAMMAR" as const, "WRITING" as const],
       contributorId: priyaS.id,
-      fileUrl: "/files/german-b1-grammar.pdf",
+      embedUrl: "https://www.goethe.de/de/spr/ueb/stu.html",
       thumbnailUrl: "https://picsum.photos/seed/german-grammar/640/360",
     },
   ];
