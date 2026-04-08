@@ -64,7 +64,8 @@ export async function GET(request: Request) {
       page,
       totalPages: Math.ceil(total / limit),
     });
-  } catch {
+  } catch (error) {
+    console.error("[GET /api/resources]", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -107,7 +108,8 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({ data: resource }, { status: 201 });
-  } catch {
+  } catch (error) {
+    console.error("[POST /api/resources]", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

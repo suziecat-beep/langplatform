@@ -37,10 +37,17 @@ export function ResourceFilters() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      updateParam("search", search || null);
+      const currentSearch = searchParams.get("search") || "";
+      const newSearch = search || "";
+      if (currentSearch === newSearch) return;
+      const params = new URLSearchParams(searchParams.toString());
+      if (newSearch) params.set("search", newSearch);
+      else params.delete("search");
+      params.delete("page");
+      router.push(`/resources?${params.toString()}`);
     }, 400);
     return () => clearTimeout(timer);
-  }, [search, updateParam]);
+  }, [search, searchParams, router]);
 
   const clearFilters = () => {
     setSearch("");

@@ -32,6 +32,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
+    if (!process.env.S3_BUCKET || !process.env.S3_ACCESS_KEY || !process.env.S3_SECRET_KEY) {
+      return NextResponse.json(
+        { error: "File uploads are not configured. Please contact an administrator." },
+        { status: 503 }
+      );
+    }
+
     const body = await request.json();
     const { filename, contentType, fileSize } = body;
 
@@ -52,7 +59,8 @@ export async function POST(request: Request) {
     const fileUrl = `https://${process.env.S3_BUCKET}.s3.${process.env.S3_REGION}.amazonaws.com/${key}`;
 
     return NextResponse.json({ data: { uploadUrl, fileUrl } });
-  } catch {
+  } catch (error) {
+    console.error("[POST /api/upload]", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
